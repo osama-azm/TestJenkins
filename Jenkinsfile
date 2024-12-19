@@ -14,7 +14,6 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 script {
-                    // checkout([$class: 'GitSCM', branches: [[name: "/Shipr-Containerization/${params.BRANCH_NAME}"]]])
                     checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'GITHUB_CREDENTIALS', url: 'https://github.com/osama-azm/TestJenkins']])
                 }
             }
@@ -37,33 +36,6 @@ pipeline {
             sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
         }
             }   
-        }
-
-
-        stage('Set Up Container') {
-            steps {
-                script {
-                    sh '''
-                    # Start a container with the required image
-                    docker run --rm -d --name jenkins-container -v $(pwd):/workspace -w /workspace ubuntu:20.04 sleep 3600
-                    '''
-                }
-            }
-        }
-
-        stage('Install Helm') {
-            steps {
-                script {
-                    sh """
-                    docker exec -u root jenkins-container bash -c "
-                        apt-get update && apt-get install -y curl &&
-                        curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz &&
-                        tar -zxvf helm.tar.gz --strip-components=1 -C /usr/local/bin linux-amd64/helm &&
-                        helm version
-                    "
-                    """
-                }
-            }
         }
 
         stage('Deploy to Kubernetes') {
