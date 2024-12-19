@@ -53,7 +53,7 @@ pipeline {
                     chmod +x get_helm.sh
                     
                     # Run the installation script
-                    ./get_helm.sh --version $HELM_VERSION
+                    ./get_helm.sh
                     
                     # Verify Helm installation
                     helm version
