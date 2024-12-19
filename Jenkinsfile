@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'alpine/helm:3.16.4'
-        }
-    }
+    agent any
 
     parameters {
         choice(name: 'SERVICE_NAME', choices: ['shipr-payment', 'shipr-inventory', 'shipr-frontend', 'shipr-inventory-consumer', 'shipr-payment-consumer'], description: 'Select the service to deploy')
