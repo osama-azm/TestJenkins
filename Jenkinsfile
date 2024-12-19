@@ -46,20 +46,19 @@ pipeline {
             }   
         }
 
-        // stage('Install Helm') {
-        //     steps {
-        //         script {
-        //             sh """
-        //             curl -fsSL https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz -o helm.tar.gz
-        //             tar -zxvf helm.tar.gz
-        //             mv linux-amd64/helm ./helm
-        //             chmod +x ./helm
-        //             helm version
-        //             kubectl version --client
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Install Helm') {
+            steps {
+                script {
+                    sh """
+                    curl -fsSL https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz -o helm.tar.gz
+                    tar -zxvf helm.tar.gz
+                    sudo mv linux-amd64/helm /usr/local/bin/helm
+                    chmod +x /usr/local/bin/helm
+                    helm version
+                    """
+                }
+            }
+        }
 
         stage('Deploy to Kubernetes') {
             steps {
