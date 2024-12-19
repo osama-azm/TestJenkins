@@ -1,5 +1,9 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'alpine/helm:3.16.4'
+        }
+    }
 
     parameters {
         choice(name: 'SERVICE_NAME', choices: ['shipr-payment', 'shipr-inventory', 'shipr-frontend', 'shipr-inventory-consumer', 'shipr-payment-consumer'], description: 'Select the service to deploy')
@@ -46,20 +50,20 @@ pipeline {
             }   
         }
 
-        stage('Install Helm') {
-            steps {
-                script {
-                    sh """
-                    curl -fsSL https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz -o helm.tar.gz
-                    tar -zxvf helm.tar.gz
-                    mv linux-amd64/helm ./helm
-                    chmod +x ./helm
-                    helm version
-                    kubectl version --client
-                    """
-                }
-            }
-        }
+        // stage('Install Helm') {
+        //     steps {
+        //         script {
+        //             sh """
+        //             curl -fsSL https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz -o helm.tar.gz
+        //             tar -zxvf helm.tar.gz
+        //             mv linux-amd64/helm ./helm
+        //             chmod +x ./helm
+        //             helm version
+        //             kubectl version --client
+        //             """
+        //         }
+        //     }
+        // }
 
         stage('Deploy to Kubernetes') {
             steps {
