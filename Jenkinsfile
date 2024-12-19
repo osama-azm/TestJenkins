@@ -44,24 +44,28 @@ pipeline {
             }   
         }
 
+
+        stage('Set Up Container') {
+            steps {
+                script {
+                    sh '''
+                    # Start a container with the required image
+                    docker run --rm -d --name jenkins-container -v $(pwd):/workspace -w /workspace ubuntu:20.04 sleep 3600
+                    '''
+                }
+            }
+        }
+
         stage('Install Helm') {
             steps {
                 script {
                     sh """
-                    # Install curl if not already present
-                    apt-get update && apt-get install -y curl
-                    
-                    # Download Helm binary
-                    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-                    
-                    # Make the script executable
-                    chmod +x get_helm.sh
-                    
-                    # Run the installation script
-                    ./get_helm.sh
-                    
-                    # Verify Helm installation
-                    helm version
+                    docker exec -u root jenkins-container bash -c "
+                        apt-get update && apt-get install -y curl &&
+                        curl -fsSL -o helm.tar.gz https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz &&
+                        tar -zxvf helm.tar.gz --strip-components=1 -C /usr/local/bin linux-amd64/helm &&
+                        helm version
+                    "
                     """
                 }
             }
