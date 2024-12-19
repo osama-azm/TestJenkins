@@ -27,14 +27,6 @@ pipeline {
             }
         }
 
-        // stage('Push to Docker Hub') {
-        //     steps {
-        //         script {
-        //             sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
-        //         }
-        //     }
-        // }
-
         stage('Deploy Docker Image to DockerHub') {
             steps {
                 script {
@@ -46,21 +38,31 @@ pipeline {
             }   
         }
 
-        stage('Install Helm') {
-            steps {
-                script {
-                    sh """
-                    curl -fsSL https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz -o helm.tar.gz
-                    tar -zxvf helm.tar.gz
-                    mv linux-amd64/helm /usr/local/bin/helm
-                    chmod +x /usr/local/bin/helm
-                    helm version
-                    """
-                }
-            }
-        }
+        // stage('Install Helm') {
+        //     steps {
+        //         script {
+        //             sh """
+        //             curl -fsSL https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz -o helm.tar.gz
+        //             tar -zxvf helm.tar.gz
+        //             mv linux-amd64/helm /usr/local/bin/helm
+        //             chmod +x /usr/local/bin/helm
+        //             helm version
+        //             """
+        //         }
+        //     }
+        // }
 
         stage('Deploy to Kubernetes') {
+            agent {
+                kubernetes {
+                        containerTemplate {
+                        name 'helm'
+                        image 'lachlanevenson/k8s-helm:v3.1.1'
+                        ttyEnabled true
+                        command 'cat'
+                    }
+                    }
+                }
             steps {
                 script {
                     sh """
