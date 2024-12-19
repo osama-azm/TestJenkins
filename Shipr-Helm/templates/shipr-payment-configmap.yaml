@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.payment.configMapName }}
+data:
+{{- range $key, $value := .Values.payment.env }}
+  {{ $key }}: "{{ $value }}"
+{{- end }}

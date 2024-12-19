@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.payment.name }}
+  labels:
+    {{- with .Values.payment.labels }}
+    {{- toYaml . | nindent 6 }}
+    {{- end }}
+spec:
+  replicas: {{ .Values.payment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.payment.name }}
+  template:
+    metadata:
+      labels:
+        {{- with .Values.payment.labels }}
+        {{- toYaml . | nindent 6 }}
+        {{- end }}
+    spec:
+      containers:
+      - name: {{ .Values.payment.name }}
+        image: {{ .Values.payment.repository }}:{{ .Values.payment.tag }}
+        ports:
+        - containerPort: {{ .Values.payment.containerPort }}
+        envFrom:
+          - configMapRef:
+              name: {{ .Values.payment.configMapName }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.payment.containerPort }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.payment.containerPort }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        startupProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.payment.containerPort }}
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: {{ .Values.payment.resources.requests.memory }}
+            cpu: {{ .Values.payment.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.payment.resources.limits.memory }}
+            cpu: {{ .Values.payment.resources.limits.cpu }}

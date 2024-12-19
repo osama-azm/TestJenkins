@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.payment-consumer.name }}
+spec:
+  selector:
+    app: {{ .Values.payment-consumer.name }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.payment-consumer.service.port }}
+      targetPort: {{ .Values.payment-consumer.service.targetport }}
+      {{- if or (eq .Values.payment-consumer.type "NodePort") (eq .Values.payment-consumer.type "LoadBalancer") }}
+      nodePort: {{ .Values.payment-consumer.service.nodePort }}
+      {{- end }}
+  type: {{ .Values.payment-consumer.type }}

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.inventory.name }}
+spec:
+  selector:
+    app: {{ .Values.inventory.name }}
+  ports:
+    - protocol: TCP
+      port: {{ .Values.inventory.service.port }}
+      targetPort: {{ .Values.inventory.service.targetport }}
+      {{- if or (eq .Values.payment.type "NodePort") (eq .Values.payment.type "LoadBalancer") }}
+      nodePort: {{ .Values.inventory.service.nodePort }}
+      {{- end }}
+  type: {{ .Values.inventory.type }}
