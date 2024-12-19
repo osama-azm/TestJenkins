@@ -14,7 +14,7 @@ pipeline {
             steps {
                 script {
                     // checkout([$class: 'GitSCM', branches: [[name: "/Shipr-Containerization/${params.BRANCH_NAME}"]]])
-                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'GITHUB_CREDENTIALS', url: 'https://github.com/osama-azm/Shipr_Project/']])
+                    checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'GITHUB_CREDENTIALS', url: 'https://github.com/osama-azm/TestJenkins']])
                 }
             }
         }
@@ -27,12 +27,23 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Hub') {
+        // stage('Push to Docker Hub') {
+        //     steps {
+        //         script {
+        //             sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
+        //         }
+        //     }
+        // }
+
+        stage('Deploy Docker Image to DockerHub') {
             steps {
                 script {
-                    sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
-                }
+                 withCredentials([string(credentialsId: 'osamaazm', variable: 'osamaazm')]) {
+                    sh 'docker login -u osamaazm -p ${osamaazm}'
             }
+            sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
+        }
+            }   
         }
 
         stage('Deploy to Kubernetes') {
