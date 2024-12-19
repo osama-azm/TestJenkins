@@ -46,6 +46,18 @@ pipeline {
             }   
         }
 
+        stage('Install Helm') {
+            steps {
+                script {
+                    sh """
+                    curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+                    helm version
+                    kubectl version --client
+                    """
+                }
+            }
+        }
+
         stage('Deploy to Kubernetes') {
             steps {
                 script {
