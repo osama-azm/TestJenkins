@@ -7,6 +7,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = 'osamaazm/test-repo'
+        HELM_VERSION = 'v3.12.0'
     }
 
     stages {
@@ -42,11 +43,20 @@ pipeline {
             steps {
                 script {
                     sh """
-                    curl -fsSL https://get.helm.sh/helm-v3.16.4-linux-amd64.tar.gz -o helm.tar.gz
-                    tar -zxvf helm.tar.gz
-                    mv linux-amd64/helm ./helm
-                    chmod +x ./helm
-                    ./helm version
+                    # Install curl if not already present
+                    apt-get update && apt-get install -y curl
+                    
+                    # Download Helm binary
+                    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+                    
+                    # Make the script executable
+                    chmod +x get_helm.sh
+                    
+                    # Run the installation script
+                    ./get_helm.sh --version $HELM_VERSION
+                    
+                    # Verify Helm installation
+                    helm version
                     """
                 }
             }
