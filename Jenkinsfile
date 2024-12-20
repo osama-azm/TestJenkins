@@ -1,8 +1,35 @@
 pipeline {
     agent {
         kubernetes {
-            label 'Kube-cloud'
-            defaultContainer 'jnlp'
+            yaml '''
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: tools
+                    image: docker:20.10.24-dind
+                    command:
+                    - sleep
+                    args:
+                    - "infinity"
+                    securityContext:
+                      privileged: true
+                    env:
+                    - name: DOCKER_HOST
+                      value: tcp://localhost:2375
+                    volumeMounts:
+                    - mountPath: /var/run/docker.sock
+                      name: docker-sock
+                  - name: kubectl-helm
+                    image: bitnami/kubectl:latest
+                    command:
+                    - cat
+                    tty: true
+                volumes:
+                - name: docker-sock
+                  hostPath:
+                    path: /var/run/docker.sock
+            '''
         }
     }
 
@@ -26,31 +53,37 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh "docker build -t ${DOCKER_HUB_REPO}:${params.SERVICE_NAME} ./${params.SERVICE_NAME}"
+                container('tools') {
+                    script {
+                        sh "docker build -t ${DOCKER_HUB_REPO}:${params.SERVICE_NAME} ./${params.SERVICE_NAME}"
+                    }
                 }
             }
         }
 
         stage('Deploy Docker Image to DockerHub') {
             steps {
-                script {
-                 withCredentials([string(credentialsId: 'osamaazm', variable: 'osamaazm')]) {
-                    sh 'docker login -u osamaazm -p ${osamaazm}'
-            }
-            sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
-        }
+                container('tools') {
+                    script {
+                    withCredentials([string(credentialsId: 'osamaazm', variable: 'osamaazm')]) {
+                        sh 'docker login -u osamaazm -p ${osamaazm}'
+                        }
+                        sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
+                    }
+                }
             }   
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    sh """
-                    helm upgrade --install ${params.SERVICE_NAME} ./Shipr-Helm/${params.SERVICE_NAME} \
-                        --set image.repository=${DOCKER_HUB_REPO} \
-                        --set image.tag=${params.SERVICE_NAME}
-                    """
+                container('kubectl-helm') {
+                    script {
+                        sh """
+                        helm upgrade --install ${params.SERVICE_NAME} ./Shipr-Helm/${params.SERVICE_NAME} \
+                            --set image.repository=${DOCKER_HUB_REPO} \
+                            --set image.tag=${params.SERVICE_NAME}
+                        """
+                    }
                 }
             }
         }
