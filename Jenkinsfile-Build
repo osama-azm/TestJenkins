@@ -1,5 +1,24 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            label 'docker-agent'
+            defaultContainer 'docker'
+            yaml """
+            apiVersion: v1
+            kind: Pod
+            metadata:
+              labels:
+                purpose: build
+            spec:
+              containers:
+              - name: docker
+                image: docker:20.10.7
+                command:
+                - cat
+                tty: true
+            """
+        }
+    }
     // agent {
     //     kubernetes {
     //         yaml '''
