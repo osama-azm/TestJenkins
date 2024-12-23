@@ -83,13 +83,13 @@ pipeline {
     //     }
     // }
 
-    post {
-        success {
-            echo "${params.SERVICE_NAME} has been successfully built and pushed!"
-        }
-        failure {
-            echo "${params.SERVICE_NAME} pipeline failed."
-        }
-    }
+    // post {
+    //     success {
+    //         echo "${params.SERVICE_NAME} has been successfully built and pushed!"
+    //     }
+    //     failure {
+    //         echo "${params.SERVICE_NAME} pipeline failed."
+    //     }
+    // }
 }
 }
