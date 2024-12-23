@@ -47,23 +47,19 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                container('tools') {
-                    script {
-                        sh "docker build -t ${DOCKER_HUB_REPO}:${params.SERVICE_NAME} ./${params.SERVICE_NAME}"
-                    }
+                script {
+                    sh "docker build -t ${DOCKER_HUB_REPO}:${params.SERVICE_NAME} ./${params.SERVICE_NAME}"
                 }
             }
         }
 
         stage('Deploy Docker Image to DockerHub') {
             steps {
-                container('tools') {
-                    script {
-                    withCredentials([string(credentialsId: 'osamaazm', variable: 'osamaazm')]) {
-                        sh 'docker login -u osamaazm -p ${osamaazm}'
-                        }
-                        sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
+                script {
+                withCredentials([string(credentialsId: 'osamaazm', variable: 'osamaazm')]) {
+                    sh 'docker login -u osamaazm -p ${osamaazm}'
                     }
+                    sh "docker push ${DOCKER_HUB_REPO}:${params.SERVICE_NAME}"
                 }
             }   
         }
