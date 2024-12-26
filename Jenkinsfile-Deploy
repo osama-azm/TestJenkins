@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the Docker image from')
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                echo "Checking out code from branch: ${params.BRANCH_NAME}..."
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${params.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[url: 'https://github.com/osama-azm/TestJenkins.git']]
+                ])
+            }
+        }
+
+        stage('Set Up Minikube Kubeconfig') {
+            steps {
+                script {
+                    sh 'export KUBECONFIG=~/.kube/config'
+                }
+            }
+        }
+
+
+        stage('Deploy Helm Template') {
+            steps {
+                script {
+
+                    sh 'helm install shipr-release ./Shipr-Helm --namespace shipr-namespace'
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    sh 'kubectl get pods --namespace shipr-namespace'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+        }
+        success {
+            echo 'Deployment successful'
+        }
+        failure {
+            echo 'Deployment failed'
+        }
+    }
+}
