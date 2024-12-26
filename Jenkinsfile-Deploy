@@ -25,13 +25,13 @@ pipeline {
             }
         }
 
-        stage('Check Kubeconfig') {
-            steps {
-                script {
-                    sh 'cat /home/ec2-user/.kube/config'
-                }
-            }
-        }
+        // stage('Check Kubeconfig') {
+        //     steps {
+        //         script {
+        //             sh 'cat /home/ec2-user/.kube/config'
+        //         }
+        //     }
+        // }
 
 
         stage('Deploy Helm Template') {
