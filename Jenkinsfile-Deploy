@@ -46,7 +46,7 @@ pipeline {
             steps {
                 script {
 
-                    sh 'helm install shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace'
+                    sh 'helm install shipr-release ./Shipr-Helm --namespace default --create-namespace'
                 }
             }
         }
