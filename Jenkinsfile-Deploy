@@ -20,7 +20,7 @@ pipeline {
         stage('Set Up Minikube Kubeconfig') {
             steps {
                 script {
-                    sh 'export KUBECONFIG=~/.kube/config'
+                    sh 'export KUBECONFIG=/home/ec2-user/.kube/config'
                 }
             }
         }
@@ -28,7 +28,7 @@ pipeline {
         stage('Check Kubeconfig') {
             steps {
                 script {
-                    sh 'cat /var/lib/jenkins/.kube/config'
+                    sh 'cat /home/ec2-user/.kube/config'
                 }
             }
         }
