@@ -2,10 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Values.frontend.name }}
-  labels:
-    {{- with .Values.frontend.labels }}
-    {{- toYaml . | nindent 6 }}
-    {{- end }}
+  labels: 
+    app: {{ .Values.frontend.name }}
 spec:
   replicas: {{ .Values.frontend.replicas }}
   selector:
@@ -14,37 +12,43 @@ spec:
   template:
     metadata:
       labels:
-        {{- with .Values.frontend.labels }}
-        {{- toYaml . | nindent 6 }}
-        {{- end }}
+        app: {{ .Values.frontend.name }}
     spec:
       containers:
       - name: {{ .Values.frontend.name }}
         image: {{ .Values.frontend.repository }}:{{ .Values.frontend.tag }}
         ports:
         - containerPort: {{ .Values.frontend.containerPort }}
+        {{- if .Values.frontend.use_probes }}
         livenessProbe:
           httpGet:
-            path: /
+            path: {{ .Values.frontend.path }}
             port: {{ .Values.frontend.containerPort }}
-          initialDelaySeconds: 10
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.frontend.initialDelaySeconds }}
+          periodSeconds: {{ .Values.frontend.periodSeconds }}
         readinessProbe:
           httpGet:
-            path: /
+            path: {{ .Values.frontend.path }}
             port: {{ .Values.frontend.containerPort }}
-          initialDelaySeconds: 5
-          periodSeconds: 5
+          initialDelaySeconds: {{ .Values.frontend.initialDelaySeconds }}
+          periodSeconds: {{ .Values.frontend.periodSeconds }}
         startupProbe:
           httpGet:
-            path: /
+            path: {{ .Values.frontend.path }}
             port: {{ .Values.frontend.containerPort }}
-          initialDelaySeconds: 15
-          periodSeconds: 5
+          initialDelaySeconds: {{ .Values.frontend.initialDelaySeconds }}
+          periodSeconds: {{ .Values.frontend.periodSeconds }}
+        {{- end }}
+        {{- if or .Values.frontend.resources.requests.set_requests .Values.frontend.resources.limits.set_limits }}
         resources:
+        {{- end }}
+          {{- if .Values.frontend.resources.requests.set_requests }}
           requests:
             memory: {{ .Values.frontend.resources.requests.memory }}
             cpu: {{ .Values.frontend.resources.requests.cpu }}
+          {{- end }}
+          {{- if .Values.frontend.resources.limits.set_limits }}
           limits:
             memory: {{ .Values.frontend.resources.limits.memory }}
             cpu: {{ .Values.frontend.resources.limits.cpu }}
+          {{- end }}

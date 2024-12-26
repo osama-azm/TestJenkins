@@ -1,10 +1,14 @@
 frontend:
   name: frontend
-  repository: osamaazm/frontend
-  tag: v1
+  repository: osamaazm/shipr-frontend
+  tag: latest
   replicas: 1
   containerPort: 80
   type: NodePort
+  use_probes: false
+  path: /
+  initialDelaySeconds: 10
+  periodSeconds: 10
   service:
     port: 80
     targetport: 80
@@ -15,182 +19,10 @@ frontend:
     app: frontend
   resources:
     requests:
+      set_requests: true
       memory: "128Mi"
       cpu: "500m"
     limits:
+      set_limits: true
       memory: "256Mi"
       cpu: "1000m"
-
-inventory:
-  name: inventory
-  repository: osamaazm/inventory
-  tag: v1
-  replicas: 1
-  containerPort: 8000
-  type: NodePort
-  configMapName: inventory-config
-  service:
-    port: 8000
-    targetport: 8000
-    nodePort: 30802
-  env:
-    REDIS_HOST: redis
-    REDIS_PORT: 6379
-    REDIS_DB: 0
-  labels:
-    environment: production
-    team: devops
-    app: inventory
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "500m"
-    limits:
-      memory: "256Mi"
-      cpu: "1000m"
-
-
-inventory-consumer:
-  name: inventory-consumer
-  repository: osamaazm/inventory-consumer
-  tag: v1
-  replicas: 1
-  containerPort: 8000
-  type: NodePort
-  configMapName: inventory-consumer-config
-  service:
-    port: 8000
-    targetport: 8000
-    nodePort: 30804
-  labels:
-    environment: production
-    team: devops
-    app: inventory-consumer
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "500m"
-    limits:
-      memory: "256Mi"
-      cpu: "1000m"
-
-payment:
-  name: payment
-  repository: osamaazm/payment
-  tag: v1
-  replicas: 1
-  containerPort: 8000
-  type: NodePort
-  configMapName: payment-config
-  service:
-    port: 8000
-    targetport: 8000
-    nodePort: 30803
-  env:
-    REDIS_HOST: redis
-    REDIS_PORT: 6379
-    REDIS_DB: 0
-    PRODUCT_SERVICE_URL: http://192.168.49.2:30802"
-    FEE_PERCENTAGE: 0.2
-  labels:
-    environment: production
-    team: devops
-    app: payment
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "500m"
-    limits:
-      memory: "256Mi"
-      cpu: "1000m"
-
-
-payment-consumer:
-  name: payment-consumer
-  repository: osamaazm/payment-consumer
-  tag: v1
-  replicas: 1
-  containerPort: 8000
-  type: NodePort
-  configMapName: payment-consumer-config
-  service:
-    port: 8000
-    targetport: 8000
-    nodePort: 30805
-  labels:
-    environment: production
-    team: devops
-    app: payment-consumer
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "500m"
-    limits:
-      memory: "256Mi"
-      cpu: "1000m"
-
-redis:
-  name: redis
-  repository: redis
-  kind: StatefulSet
-  tag: alpine
-  replicas: 1
-  containerPort: 6379
-  type: ClusterIP
-  storageClassName: standard
-  provisioner: k8s.io/minikube-hostpath
-  reclaimPolicy: Delete
-  volumeBindingMode: Immediate
-  service:
-    port: 6379
-  volume:
-    storage: 1Gi
-    accessModes:
-      - ReadWriteOnce
-      - ReadOnlyMany
-    hostPath: /data/redis
-  probes:
-    liveness:
-      enabled: true
-    readiness:
-      enabled: true
-  labels:
-    environment: production
-    team: devops
-    app: redis
-  extraLabels:
-    customLabel: "value"
-  parameters:
-    type: fast
-    fsType: ext4
-    encrypted: "false"
-  mountOptions:
-    option1: "rw"
-    option2: "dirsync"
-
-ingress:
-  enabled: false
-  name: shipr-ingress
-  rules:
-    - host: frontend.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-          service:
-            name: frontend-service
-            port: 80
-    - host: payment.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-          service:
-            name: payment-service
-            port: 8000
-    - host: inventory.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-          service:
-            name: inventory-service
-            port: 8001
-
