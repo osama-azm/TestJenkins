@@ -18,7 +18,7 @@ spec:
     - protocol: TCP
       port: {{ .Values.frontend.service.port }}
       targetPort: {{ .Values.frontend.service.targetport }}
-      {{- if or (eq .Values.payment.type "NodePort") (eq .Values.payment.type "LoadBalancer") }}
+      {{- if or (eq .Values.frontend.type "NodePort") (eq .Values.frontend.type "LoadBalancer") }}
       nodePort: {{ .Values.frontend.service.nodePort }}
       {{- end }}
   type: {{ .Values.frontend.type }}
