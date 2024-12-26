@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_REGION = 'us-east-1'
+        CLUSTER_NAME = 'wonderful-electro-creature'
+    }
+
     parameters {
         string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the Docker image from')
     }
@@ -17,28 +22,32 @@ pipeline {
             }
         }
 
-        stage('Set Up Minikube Kubeconfig') {
-            steps {
-                script {
-                    sh 'export KUBECONFIG=/home/ec2-user/.kube/config'
-                }
-            }
-        }
-
-        // stage('Check Kubeconfig') {
+        // stage('Set Up Minikube Kubeconfig') {
         //     steps {
         //         script {
-        //             sh 'cat /home/ec2-user/.kube/config'
+        //             sh 'export KUBECONFIG=/home/ec2-user/.kube/config'
         //         }
         //     }
         // }
+
+
+        stage('Update kubeconfig') {
+            steps {
+                script {
+                    sh '''
+                    aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME
+                    kubectl get nodes
+                    '''
+                }
+            }
+        }
 
 
         stage('Deploy Helm Template') {
             steps {
                 script {
 
-                    sh 'helm install shipr-release ./Shipr-Helm --namespace shipr-namespace'
+                    sh 'helm install shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace'
                 }
             }
         }
