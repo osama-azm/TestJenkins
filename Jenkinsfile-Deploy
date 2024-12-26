@@ -25,6 +25,14 @@ pipeline {
             }
         }
 
+        stage('Check Kubeconfig') {
+            steps {
+                script {
+                    sh 'cat /var/lib/jenkins/.kube/config'
+                }
+            }
+        }
+
 
         stage('Deploy Helm Template') {
             steps {
