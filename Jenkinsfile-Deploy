@@ -53,29 +53,11 @@ pipeline {
         }
 
 
-        // stage('Deploy Helm') {
-        //     steps {
-        //         script {
-
-        //             sh 'kubectl get pods'
-        //         }
-        //     }
-        // }
-
-
         stage('Deploy Helm Template') {
             steps {
                 script {
 
                     sh 'helm install shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace'
-                }
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                script {
-                    sh 'kubectl get pods --namespace shipr-namespace'
                 }
             }
         }
