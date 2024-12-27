@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION = 'us-east-1'
-        CLUSTER_NAME = 'Jenkins-Test'
+        CLUSTER_NAME = 'my-eks-cluster'
     }
 
     parameters {
