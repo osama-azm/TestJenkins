@@ -31,15 +31,15 @@ pipeline {
         // }
 
 
-        stage('Update kubeconfig') {
-            steps {
-                script {
-                    sh '''
-                    aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME
-                    '''
-                }
-            }
-        }
+        // stage('Update kubeconfig') {
+        //     steps {
+        //         script {
+        //             sh '''
+        //             aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME
+        //             '''
+        //         }
+        //     }
+        // }
 
 
         stage('Deploy Helm') {
