@@ -22,14 +22,6 @@ pipeline {
             }
         }
 
-        // stage('Set Up Minikube Kubeconfig') {
-        //     steps {
-        //         script {
-        //             sh 'export KUBECONFIG=/home/ec2-user/.kube/config'
-        //         }
-        //     }
-        // }
-
 
 
         stage('Setup AWS CLI') {
@@ -61,14 +53,14 @@ pipeline {
         }
 
 
-        stage('Deploy Helm') {
-            steps {
-                script {
+        // stage('Deploy Helm') {
+        //     steps {
+        //         script {
 
-                    sh 'kubectl get pods'
-                }
-            }
-        }
+        //             sh 'kubectl get pods'
+        //         }
+        //     }
+        // }
 
 
         stage('Deploy Helm Template') {
