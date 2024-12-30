@@ -31,6 +31,7 @@ pipeline {
                     kubectl config get-contexts
                     kubectl config use-context minikube
                     kubectl get pods --all-namespaces
+                    helm upgrade shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace
                     '''
                 }
             }
