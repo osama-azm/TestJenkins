@@ -19,7 +19,7 @@ pipeline {
     }
   }
 
-
+    stages {
     stage('DoKubectl') {
       steps {
         container('kubectl') {
@@ -28,3 +28,4 @@ pipeline {
       }
     }
   }
+}
