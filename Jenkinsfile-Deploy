@@ -1,13 +1,38 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+            apiVersion: v1
+            kind: Pod
+            spec:
+              containers:
+              - name: jnlp
+                image: jenkins/inbound-agent:latest
+                args: ['\$(JENKINS_SECRET)', '\$(JENKINS_AGENT_NAME)']
+              - name: kubectl
+                image: bitnami/kubectl:latest
+                command:
+                - cat
+                tty: true
+              - name: helm
+                image: alpine/helm:latest
+                command:
+                - cat
+                tty: true
+            """
+        }
+    }
 
     environment {
-        AWS_REGION = 'us-east-1'
-        CLUSTER_NAME = 'my-eks-cluster'
+        KUBECONFIG = '/var/jenkins_home/.kube/config' // Path to the kubeconfig file
+        CLUSTER_CONTEXT = 'minikube'                 // Minikube context
+        NAMESPACE = 'shipr-namespace'               // Kubernetes namespace
+        RELEASE_NAME = 'shipr-release'              // Helm release name
+        HELM_CHART_PATH = './Shipr-Helm'            // Path to Helm chart
     }
 
     parameters {
-        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the Docker image from')
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the application from')
     }
 
     stages {
@@ -22,41 +47,26 @@ pipeline {
             }
         }
 
-
-
-        // stage('Setup AWS CLI') {
-        //     steps {
-        //         script {
-        //             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-        //                               credentialsId: 'aws-credentials']]) {
-        //                 sh """
-        //                 aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-        //                 aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-        //                 aws configure set region $AWS_REGION
-        //                 """
-        //             }
-        //         }
-        //     }
-        // }
-
-
-        stage('Update kubeconfig') {
+        stage('Update kubeconfig for Minikube') {
             steps {
-                script {
-                    sh '''
-                    export KUBECONFIG=/var/jenkins_home/.kube/config
-                    kubectl config use-context minikube
-                    '''
+                container('kubectl') {
+                    echo 'Updating kubeconfig to use Minikube...'
+                    sh """
+                    export KUBECONFIG=${KUBECONFIG}
+                    kubectl config use-context ${CLUSTER_CONTEXT}
+                    """
                 }
             }
         }
 
-
-        stage('Deploy Helm Template') {
+        stage('Deploy Helm Chart') {
             steps {
-                script {
-
-                    sh 'helm upgrade shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace'
+                container('helm') {
+                    echo "Deploying Helm chart: ${HELM_CHART_PATH} in namespace: ${NAMESPACE}..."
+                    sh """
+                    helm upgrade --install ${RELEASE_NAME} ${HELM_CHART_PATH} \
+                        --namespace ${NAMESPACE} --create-namespace
+                    """
                 }
             }
         }
@@ -64,13 +74,13 @@ pipeline {
 
     post {
         always {
-            echo 'Cleaning up...'
+            echo 'Cleaning up temporary resources...'
         }
         success {
-            echo 'Deployment successful'
+            echo 'Deployment to Minikube successful!'
         }
         failure {
-            echo 'Deployment failed'
+            echo 'Deployment to Minikube failed. Check the logs for details.'
         }
     }
 }
