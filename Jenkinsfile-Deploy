@@ -1,31 +1,75 @@
 pipeline {
-  agent {
-    kubernetes {
-      yaml '''
-        apiVersion: v1
-        kind: Pod
-        metadata:
-          name: kubectl
-        spec:
-          containers:
-          - name: kubectl
-            image: docker.io/bitnami/kubectl
-            command:
-            - cat
-            tty: true
-            securityContext:
-              runAsUser: 1000
-      '''
+    agent any
+
+    environment {
+        AWS_REGION = 'us-east-1'
+        CLUSTER_NAME = 'my-eks-cluster'
     }
-  }
+
+    parameters {
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the Docker image from')
+    }
 
     stages {
-    stage('DoKubectl') {
-      steps {
-        container('kubectl') {
-          sh 'kubectl version'
+        stage('Checkout Code') {
+            steps {
+                echo "Checking out code from branch: ${params.BRANCH_NAME}..."
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: "*/${params.BRANCH_NAME}"]],
+                    userRemoteConfigs: [[url: 'https://github.com/osama-azm/TestJenkins.git']]
+                ])
+            }
         }
-      }
+
+
+
+        // stage('Setup AWS CLI') {
+        //     steps {
+        //         script {
+        //             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+        //                               credentialsId: 'aws-credentials']]) {
+        //                 sh """
+        //                 aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+        //                 aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+        //                 aws configure set region $AWS_REGION
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
+
+
+        stage('Update kubeconfig') {
+            steps {
+                script {
+                    sh '''
+                    kubectl config use-context minikube
+                    '''
+                }
+            }
+        }
+
+
+        stage('Deploy Helm Template') {
+            steps {
+                script {
+
+                    sh 'helm upgrade shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace'
+                }
+            }
+        }
     }
-  }
+
+    post {
+        always {
+            echo 'Cleaning up...'
+        }
+        success {
+            echo 'Deployment successful'
+        }
+        failure {
+            echo 'Deployment failed'
+        }
+    }
 }
