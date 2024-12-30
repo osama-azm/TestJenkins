@@ -1,28 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        AWS_REGION = 'us-east-1'
-        CLUSTER_NAME = 'my-eks-cluster'
-    }
-
-    parameters {
-        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the Docker image from')
-    }
-
-    stages {
-        stage('Checkout Code') {
-            steps {
-                echo "Checking out code from branch: ${params.BRANCH_NAME}..."
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: "*/${params.BRANCH_NAME}"]],
-                    userRemoteConfigs: [[url: 'https://github.com/osama-azm/TestJenkins.git']]
-                ])
-            }
-        }
-
-
         stage('Update kubeconfig and Deploy Helm Template') {
             steps {
                 script {
@@ -39,9 +17,6 @@ pipeline {
     }
 
     post {
-        always {
-            echo 'Cleaning up...'
-        }
         success {
             echo 'Deployment successful'
         }
