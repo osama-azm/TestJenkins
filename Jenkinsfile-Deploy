@@ -1,35 +1,13 @@
 pipeline {
-    agent {
-        kubernetes {
-            yaml """
-            apiVersion: v1
-            kind: Pod
-            spec:
-              containers:
-              - name: kubectl
-                image: bitnami/kubectl:latest
-                command:
-                - cat
-                tty: true
-              - name: helm
-                image: alpine/helm:latest
-                command:
-                - cat
-                tty: true
-            """
-        }
-    }
+    agent any
 
     environment {
-        KUBECONFIG = '/var/jenkins_home/.kube/config' // Path to the kubeconfig file
-        CLUSTER_CONTEXT = 'minikube'                 // Minikube context
-        NAMESPACE = 'shipr-namespace'               // Kubernetes namespace
-        RELEASE_NAME = 'shipr-release'              // Helm release name
-        HELM_CHART_PATH = './Shipr-Helm'            // Path to Helm chart
+        AWS_REGION = 'us-east-1'
+        CLUSTER_NAME = 'my-eks-cluster'
     }
 
     parameters {
-        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the application from')
+        string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the Docker image from')
     }
 
     stages {
@@ -44,26 +22,25 @@ pipeline {
             }
         }
 
-        stage('Update kubeconfig for Minikube') {
+
+        stage('Update kubeconfig') {
             steps {
-                container('kubectl') {
-                    echo 'Updating kubeconfig to use Minikube...'
-                    sh """
-                    export KUBECONFIG=${KUBECONFIG}
-                    kubectl config use-context ${CLUSTER_CONTEXT}
-                    """
+                script {
+                    sh '''
+                    export KUBECONFIG=/var/jenkins_home/.kube/config
+                    kubectl config get-contexts
+                    kubectl config use-context minikube
+                    '''
                 }
             }
         }
 
-        stage('Deploy Helm Chart') {
+
+        stage('Deploy Helm Template') {
             steps {
-                container('helm') {
-                    echo "Deploying Helm chart: ${HELM_CHART_PATH} in namespace: ${NAMESPACE}..."
-                    sh """
-                    helm upgrade --install ${RELEASE_NAME} ${HELM_CHART_PATH} \
-                        --namespace ${NAMESPACE} --create-namespace
-                    """
+                script {
+
+                    sh 'helm upgrade shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace'
                 }
             }
         }
@@ -71,13 +48,13 @@ pipeline {
 
     post {
         always {
-            echo 'Cleaning up temporary resources...'
+            echo 'Cleaning up...'
         }
         success {
-            echo 'Deployment to Minikube successful!'
+            echo 'Deployment successful'
         }
         failure {
-            echo 'Deployment to Minikube failed. Check the logs for details.'
+            echo 'Deployment failed'
         }
     }
 }
