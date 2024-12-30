@@ -24,29 +24,28 @@ pipeline {
 
 
 
-        stage('Setup AWS CLI') {
-            steps {
-                script {
-                    // Load AWS credentials from Jenkins store
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-                                      credentialsId: 'aws-credentials']]) {
-                        // Configure AWS CLI for use in the pipeline
-                        sh """
-                        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-                        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-                        aws configure set region $AWS_REGION
-                        """
-                    }
-                }
-            }
-        }
+        // stage('Setup AWS CLI') {
+        //     steps {
+        //         script {
+        //             withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+        //                               credentialsId: 'aws-credentials']]) {
+        //                 sh """
+        //                 aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+        //                 aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+        //                 aws configure set region $AWS_REGION
+        //                 """
+        //             }
+        //         }
+        //     }
+        // }
 
 
         stage('Update kubeconfig') {
             steps {
                 script {
                     sh '''
-                    aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME
+                    // aws eks --region $AWS_REGION update-kubeconfig --name $CLUSTER_NAME
+                    kubectl config use-context minikube
                     '''
                 }
             }
