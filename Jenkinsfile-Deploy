@@ -30,6 +30,7 @@ pipeline {
                     export KUBECONFIG=/var/jenkins_home/.kube/config
                     kubectl config get-contexts
                     kubectl config use-context minikube
+                    kubectl get pods --all-namespaces
                     '''
                 }
             }
