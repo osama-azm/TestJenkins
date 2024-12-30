@@ -23,29 +23,19 @@ pipeline {
         }
 
 
-        stage('Update kubeconfig') {
+        stage('Update kubeconfig and Deploy Helm Template') {
             steps {
                 script {
                     sh '''
                     export KUBECONFIG=/var/jenkins_home/.kube/config
                     kubectl config get-contexts
                     kubectl config use-context minikube
-                    kubectl get pods --all-namespaces
                     helm upgrade shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace
                     '''
                 }
             }
         }
 
-
-        stage('Deploy Helm Template') {
-            steps {
-                script {
-
-                    sh 'helm upgrade shipr-release ./Shipr-Helm --namespace shipr-namespace --create-namespace'
-                }
-            }
-        }
     }
 
     post {
