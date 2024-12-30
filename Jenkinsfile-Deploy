@@ -1,6 +1,7 @@
 pipeline {
     agent any
 
+    stages {
         stage('Update kubeconfig and Deploy Helm Template') {
             steps {
                 script {
