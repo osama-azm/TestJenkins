@@ -2,7 +2,7 @@ frontend:
   name: frontend
   repository: osamaazm/shipr-frontend
   tag: latest
-  replicas: 1
+  replicas: 2
   containerPort: 80
   type: NodePort
   use_probes: false
