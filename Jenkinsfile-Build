@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_IMAGE = 'osamaazm/shipr-frontend'
-        SERVICE_NAME = 'shipr-frontend'
+        SERVICE_NAME = 'latest'
     }
     parameters {
         string(name: 'BRANCH_NAME', defaultValue: 'main', description: 'Branch to build the Docker image from')
