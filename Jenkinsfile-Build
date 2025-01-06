@@ -22,7 +22,7 @@ pipeline {
             steps {
                 echo 'Building Docker image...'
                 script {
-                    sh 'sudo docker build -t ${DOCKER_IMAGE}:${SERVICE_NAME} ./shipr-frontend'
+                    sh 'docker build -t ${DOCKER_IMAGE}:${SERVICE_NAME} ./shipr-frontend'
                 }
             }
         }
